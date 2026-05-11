@@ -61,6 +61,22 @@ docker run -d \
 
 After that, `ai chat` handles starting and stopping it.
 
+### Connecting Open WebUI to llama-server
+
+1. Open Open WebUI in your browser
+2. Go to **Admin Settings → Connections → OpenAI**
+3. Click **Add Connection**
+4. Set the following:
+   - **URL:** `http://172.17.0.1:8085/v1`
+   - **API Key:** leave blank
+   - **Provider:** llama.cpp
+
+> `172.17.0.1` is the Docker bridge gateway address — this is how the Open WebUI container reaches llama-server running on the host.
+> To find yours try this command:
+>```bash
+>ip route | grep docker
+>```
+
 ### CUDA
 
 - NVIDIA Driver: 595.71.05 
