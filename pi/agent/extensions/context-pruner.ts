@@ -3,9 +3,9 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 // ─── Configuration ──────────────────────────────────────────────────────────
 const MAX_READ_CHARS  = 16000;   // ~4k tokens (4 chars/token heuristic)
 const MAX_BASH_CHARS  =  8000;   // ~2k tokens
-const CTX_SIZE        = 32768;
+const CTX_SIZE        = 65536;
 const CONTEXT_WARN_PCT  = 0.70;  // warn at 70% of context window
-const CONTEXT_WARN_THRESHOLD = Math.floor(CTX_SIZE * CONTEXT_WARN_PCT); // 22937
+const CONTEXT_WARN_THRESHOLD = Math.floor(CTX_SIZE * CONTEXT_WARN_PCT); // 45875
 
 let warnedContextThreshold = false;
 
