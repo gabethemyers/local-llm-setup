@@ -85,3 +85,4 @@ The following aliases are active in this shell. Use the exact commands — do no
 - When in doubt about file structure, run a narrow `find` or `ls` rather than guessing.
 - Always verify your changes make sense in context before reporting them as done.
 - **Default to non-destructive.** When in doubt, don't delete. Ask. Err on the side of keeping files.
+- **Never run a script the user explicitly says not to run.** "Don't run X" means never — not to test, not to verify, not for debugging. Trust your work and report the result without executing.

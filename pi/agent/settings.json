@@ -1,7 +1,11 @@
 {
-  "lastChangelogVersion": "0.70.6",
-  "pi.defaultShell": "zsh",
+  "lastChangelogVersion": "0.75.1",
+  "shellPath": "/usr/bin/zsh",
   "theme": "dark",
   "defaultProvider": "llamacpp",
-  "defaultModel": "qwen-local"
+  "defaultModel": "qwen-local",
+  "packages": [
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:@agnishc/edb-agent-steer"
+  ]
 }

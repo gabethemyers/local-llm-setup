@@ -12,7 +12,8 @@
         {
           "id": "qwen-local",
           "name": "Local Qwen 3.6",
-          "input": ["text"]
+          "input": ["text"],
+          "contextWindow": 65000
         }
       ]
     },
