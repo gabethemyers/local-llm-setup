@@ -1,5 +1,20 @@
 {
   "providers": {
+    "nvidia": {
+      "baseUrl": "https://integrate.api.nvidia.com/v1",
+      "api": "openai-completions",
+      "apiKey": "nvidia-api-key-placeholder",
+      "models": [
+        {
+          "id": "nvidia/nemotron-3-super-120b-a12b",
+          "name": "NVIDIA Nemotron 3 Super 120B",
+          "input": [
+            "text"
+          ],
+          "contextWindow": 131072
+        }
+      ]
+    },
     "llamacpp": {
       "baseUrl": "http://127.0.0.1:8085/v1",
       "api": "openai-completions",
@@ -12,7 +27,9 @@
         {
           "id": "qwen-local",
           "name": "Local Qwen 3.6",
-          "input": ["text"],
+          "input": [
+            "text"
+          ],
           "contextWindow": 65000
         }
       ]
@@ -20,12 +37,15 @@
     "gemini-studio": {
       "api": "google-generative-ai",
       "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
-      "apiKey": "GOOGLE API KEY HERE",
+      "apiKey": "gemini-studio-api-key-placeholder",
       "models": [
         {
           "id": "gemma-4-31b-it",
           "name": "Gemma 4",
-          "input": ["text", "image"]
+          "input": [
+            "text",
+            "image"
+          ]
         }
       ]
     }

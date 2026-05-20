@@ -29,5 +29,5 @@ Default provider is `llamacpp`.
 ## Setup
 
 1. Place the `agent/` directory where pi expects its config
-2. Add your Google API key to `models.json` under `gemini-studio.apiKey`
+2. Add your Google API key to `~/.pi/agent/models.json` under `gemini-studio.apiKey` (the repo copy is sanitized by `sync-pi-repo.sh`)
 3. Ensure llama-server is running (`ai code`) before using the local model

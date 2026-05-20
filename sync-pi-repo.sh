@@ -47,6 +47,40 @@ elif $DRY_RUN; then
   echo "No changes: repo already matches ~/.pi/agent/ (after excludes)."
 fi
 
+REPO_MODELS="$REPO_PI/models.json"
+if [[ -f "$REPO_MODELS" ]]; then
+  if command -v jq >/dev/null 2>&1; then
+    if $DRY_RUN; then
+      echo "Would redact apiKey fields in $REPO_MODELS"
+    else
+      TMP_MODELS="$(mktemp)"
+      jq '
+        if (.providers? | type == "object") then
+          .providers |= with_entries(
+            if (.value.apiKey? != null) then
+              .value.apiKey = (
+                if .value.apiKey == "local" then
+                  "local"
+                else
+                  (.key + "-api-key-placeholder")
+                end
+              )
+            else
+              .
+            end
+          )
+        else
+          .
+        end
+      ' "$REPO_MODELS" > "$TMP_MODELS"
+      mv "$TMP_MODELS" "$REPO_MODELS"
+      echo "Redacted apiKey fields in $REPO_MODELS"
+    fi
+  else
+    echo "WARN: jq not found; could not redact apiKey fields in $REPO_MODELS"
+  fi
+fi
+
 echo ""
 if $DRY_RUN; then
   echo "Dry run complete: ~/.pi/agent/ -> repo"
