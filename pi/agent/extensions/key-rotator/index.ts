@@ -71,18 +71,6 @@ function maskKey(k: string): string {
 
 // ─── Extension ──────────────────────────────────────────────────────────────
 export default function (pi: ExtensionAPI) {
-  // Add only the specific NVIDIA model mentioned in Reddit to the scoped model list
-  pi.on("session_start", async (_event, ctx) => {
-    const allModels = pi.getAllModels();
-    const targetModel = allModels.find(
-      (m) => m.id === "nvidia/nemotron-3-super" || m.id === "nvidia/nemotron-3-super-120b-a12b",
-    );
-
-    if (targetModel) {
-      ctx.sessionManager.setScopedModels([{ model: targetModel }]);
-    }
-  });
-
   // Rotate NVIDIA key before auth resolution so stream options get the new key.
   // This is provider-level (model registry), not payload-level header rewriting.
   pi.on("context", (_event, ctx) => {
