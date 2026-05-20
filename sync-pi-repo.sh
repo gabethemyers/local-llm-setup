@@ -1,60 +1,55 @@
 #!/usr/bin/env zsh
-# sync-pi-repo.sh — Copy ~/.pi/agent/ into the repo (local is source of truth)
-# Excludes: auth.json, sessions/, git/, themes/
+# sync-pi-repo.sh — Copy ~/.pi/agent/ into the repo (home is source of truth)
+# Direction: ~/.pi/agent -> ~/dev/local-llm-setup/pi/agent
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOME_PI="$HOME/.pi/agent"
 REPO_PI="$SCRIPT_DIR/pi/agent"
+DRY_RUN=false
+
+if [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]]; then
+  DRY_RUN=true
+fi
 
 if [[ ! -d "$HOME_PI" ]]; then
-  echo "❌  ~/.pi/agent/ not found. Nothing to sync."
+  echo "ERROR: ~/.pi/agent/ not found. Nothing to sync."
   exit 1
 fi
 
-# Ensure repo directory exists
 mkdir -p "$REPO_PI"
 
-# Files/dirs to exclude
+# Secrets + churn to keep local-only
 EXCLUDES=(
   "auth.json"
   "sessions"
   "git"
   "themes"
+  "extensions/key-rotator/keys.json"
 )
 
-count=0
+SYNC_FLAGS=(-a --delete)
+if $DRY_RUN; then
+  SYNC_FLAGS+=(--dry-run --itemize-changes --human-readable)
+fi
 
-while IFS= read -r -d '' file; do
-  rel="${file#$HOME_PI/}"
+RSYNC_ARGS=()
+for excl in "${EXCLUDES[@]}"; do
+  RSYNC_ARGS+=(--exclude "$excl")
+done
 
-  # Check if any excluded path is a prefix of this file
-  skip=false
-  for excl in "${EXCLUDES[@]}"; do
-    if [[ "$rel" == "$excl" || "$rel" == "$excl/"* ]]; then
-      skip=true
-      break
-    fi
-  done
+RSYNC_OUTPUT="$(rsync "${SYNC_FLAGS[@]}" "${RSYNC_ARGS[@]}" "$HOME_PI/" "$REPO_PI/")"
 
-  if $skip; then
-    continue
-  fi
-
-  dest="$REPO_PI/$rel"
-  dest_dir="$(dirname "$dest")"
-  mkdir -p "$dest_dir"
-
-  if [[ -f "$dest" ]]; then
-    cp -f "$file" "$dest"
-    echo "  ✏️  $rel"
-  else
-    cp -f "$file" "$dest"
-    echo "  🆕  $rel"
-  fi
-  count=$((count + 1))
-done < <(find "$HOME_PI" -type f -print0)
+if [[ -n "$RSYNC_OUTPUT" ]]; then
+  printf "%s\n" "$RSYNC_OUTPUT"
+elif $DRY_RUN; then
+  echo "No changes: repo already matches ~/.pi/agent/ (after excludes)."
+fi
 
 echo ""
-echo "✅ Synced $count files from ~/.pi/agent/ → repo"
+if $DRY_RUN; then
+  echo "Dry run complete: ~/.pi/agent/ -> repo"
+else
+  echo "Synced ~/.pi/agent/ -> repo"
+fi
