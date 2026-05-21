@@ -15,7 +15,7 @@ ai() {
         nohup $SERVER_BIN \
             -m $MODEL_PATH \
             -fitt 1600 \
-            -c 65536 \
+            -c 32768 \
             -n 16384 \
             -fa on \
             -np 1 \
@@ -50,7 +50,7 @@ ai() {
                 --repeat-penalty 1.0
             docker start open-webui > /dev/null 2>&1
             echo "Starting Open WebUI"
-            sleep 10 
+            sleep 15 
             firefox http://localhost:3000 > /dev/null 2>&1 &
             ;;
 
@@ -81,7 +81,7 @@ ai() {
                 --repeat-penalty 1.0
             docker start open-webui > /dev/null 2>&1
             echo "Starting Open WebUI"
-            sleep 10
+            sleep 15
             firefox http://localhost:3000 > /dev/null 2>&1 &
             ;;
 
