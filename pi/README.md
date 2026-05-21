@@ -1,33 +1,80 @@
-# Pi Coding Agent Setup
+# pi Agent Config
 
-Configuration for [pi-coding-agent](https://github.com/mariozechner/pi-coding-agent), a terminal-based AI coding agent.
+Configuration for [pi-coding-agent](https://github.com/mariozechner/pi-coding-agent), a terminal-based AI coding agent. See the [main README](../README.md) for the local LLM setup this config is paired with.
 
 ## Structure
 
 ```
 agent/
-├── AGENTS.md           # Agent behavior rules and shell aliases
-├── models.json         # Model providers and configuration
-├── settings.json       # UI and default model settings
+├── AGENTS.md               # Agent behavior rules and shell aliases
+├── models.json             # Model providers
+├── settings.json           # UI settings and default model
 ├── extensions/
-│   ├── context-pruner.ts   # Truncates oversized tool outputs, warns at 70% context usage
-│   └── permission-gate.ts  # Prompts before dangerous bash commands (rm -rf, sudo, chmod 777)
-└── skills/
-    └── plan-first/
-        └── SKILL.md    # Forces TODO.md planning phase before any code changes
+│   ├── context-pruner.ts   # Truncates oversized tool outputs, warns at 70% context
+│   ├── key-rotator/        # Rotates through multiple NVIDIA API keys
+│   ├── permission-gate.ts  # Confirms before dangerous bash commands (rm, sudo, chmod 777)
+│   └── session-name.ts     # /session-name to name sessions for the session picker
+├── skills/
+│   └── plan-first/
+│       └── SKILL.md        # Forces TODO.md planning before code changes
+└── themes/
+    └── nord-cachy.json     # Nord-inspired theme
 ```
 
 ## Models
 
+The repo copy has sanitized API keys — add real keys locally.
+
 | Provider | Model | Notes |
 |---|---|---|
-| llamacpp | Qwen3-30B-A3B (local) | Served via llama-server at `127.0.0.1:8085` |
-| gemini-studio | gemma-4-31b-it | Google Generative AI API |
+| nvidia | minimaxai/minimax-m2.7 | Default. Requires NVIDIA API key(s). Rate-limit distributed by key-rotator. |
+| llamacpp | qwen-local (Qwen3.6-35B-A3B) | Local via `llama-server` at `127.0.0.1:8085`. 32k context. |
+| gemini-studio | gemma-4-31b-it | Google Generative AI API. Vision support. |
 
-Default provider is `llamacpp`.
+## Extensions
 
-## Setup
+### key-rotator
 
-1. Place the `agent/` directory where pi expects its config
-2. Add your Google API key to `~/.pi/agent/models.json` under `gemini-studio.apiKey` (the repo copy is sanitized by `sync-pi-repo.sh`)
-3. Ensure llama-server is running (`ai code`) before using the local model
+Rotates through multiple NVIDIA API keys to distribute rate limits across free-tier accounts.
+
+```bash
+mkdir -p ~/.pi/agent/extensions/key-rotator
+# Add your keys:
+$EDITOR ~/.pi/agent/extensions/key-rotator/keys.json
+```
+
+```json
+{
+  "keys": ["nvapi-...", "nvapi-...", "nvapi-...", "nvapi-...", "nvapi-..."],
+  "currentIndex": 0
+}
+```
+
+After editing, restart pi. Use `/keys` to check rotation status.
+
+### context-pruner
+
+- Truncates `read` outputs beyond ~4k tokens
+- Truncates `bash` outputs beyond ~2k tokens
+- Warns once per session when context hits 70% (~45k tokens)
+
+### permission-gate
+
+Prompts for confirmation before running: `rm`, `sudo`, `chmod`/`chown 777`, `truncate`. Blocked without a UI.
+
+### session-name
+
+Use `/session-name [name]` to give the current session a friendly name visible in the session picker.
+
+## Syncing
+
+Copies `~/.pi/agent/` → `pi/agent/` (from the repo root). These are excluded automatically:
+
+- `auth.json`, `sessions/`, `git/`, `themes/`, `extensions/key-rotator/keys.json`
+
+API keys in `models.json` are redacted during sync.
+
+```bash
+./sync-pi-repo.sh --dry-run  # preview changes
+./sync-pi-repo.sh            # actually sync
+```

@@ -6,6 +6,7 @@
   "defaultModel": "qwen-local",
   "packages": [
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:@agnishc/edb-agent-steer"
+    "npm:@agnishc/edb-agent-steer",
+    "npm:pi-handoff"
   ]
 }

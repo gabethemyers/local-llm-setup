@@ -6,12 +6,12 @@
       "apiKey": "nvidia-api-key-placeholder",
       "models": [
         {
-          "id": "nvidia/nemotron-3-super-120b-a12b",
-          "name": "NVIDIA Nemotron 3 Super 120B",
+          "id": "minimaxai/minimax-m2.7",
+          "name": "Minimax m2.7",
           "input": [
             "text"
           ],
-          "contextWindow": 131072
+          "contextWindow": 204800
         }
       ]
     },
@@ -30,7 +30,7 @@
           "input": [
             "text"
           ],
-          "contextWindow": 65000
+          "contextWindow": 32000
         }
       ]
     },
