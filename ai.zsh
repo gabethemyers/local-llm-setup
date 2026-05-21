@@ -50,7 +50,7 @@ ai() {
                 --repeat-penalty 1.0
             docker start open-webui > /dev/null 2>&1
             echo "Starting Open WebUI"
-            sleep 15 
+            until curl -sf http://localhost:3000/health; do sleep 1; done
             firefox http://localhost:3000 > /dev/null 2>&1 &
             ;;
 
@@ -81,7 +81,7 @@ ai() {
                 --repeat-penalty 1.0
             docker start open-webui > /dev/null 2>&1
             echo "Starting Open WebUI"
-            sleep 15
+            until curl -sf http://localhost:3000/health; do sleep 1; done
             firefox http://localhost:3000 > /dev/null 2>&1 &
             ;;
 
