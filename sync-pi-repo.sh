@@ -26,6 +26,8 @@ EXCLUDES=(
   "sessions"
   "git"
   "themes"
+  "npm"
+  "node_modules"
   "extensions/key-rotator/keys.json"
 )
 

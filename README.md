@@ -15,6 +15,7 @@ Configuration, build instructions, and management scripts for running Qwen3.6-35
 
 - **Backend:** [llama.cpp](https://github.com/ggml-org/llama.cpp) (built with CUDA)
 - **Interface:** [Open WebUI](https://github.com/open-webui/open-webui) (Docker)
+- **pi Agent:** See [`pi/README.md`](./pi/README.md) for model providers, extensions, and sync config.
 
 ## Build Instructions
 
@@ -29,9 +30,9 @@ Binary will be at `~/llama-cpp/build/bin/llama-server`.
 
 ## Models
 
-| Model                 | Quant      | Link                                                                      | VRAM     | Context | Tok/s   | CPU MoE      |
+| Model                 | Quant      | Link                                                                      | VRAM     | Context | Tok/s   | --fitt      |
 | --------------------- | ---------- | ------------------------------------------------------------------------- | -------- | ------- | ------- | ------------ |
-| Qwen3.6-35B-A3B (MTP) | UD-Q4_K_XL | [HuggingFace](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF) | ~11.6 GB | 65k     | ~40 t/s | auto (--fit) |
+| Qwen3.6-35B-A3B (MTP) | UD-Q4_K_XL | [HuggingFace](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | ~11.6 GB | 32k  | ~40 t/s | 1600 |
 
 Download model:
 
@@ -46,7 +47,7 @@ hf download unsloth/Qwen3.6-35B-A3B-MTP-GGUF --include "*UD-Q4_K_XL*" --local-di
 See [`ai.zsh`](./ai.zsh). Add to your shell config (`~/.zshrc` or `~/.bashrc`):
 
 ```bash
-source /path/to/local-llm/ai.zsh
+source /path/to/local-llm-setup/ai.zsh
 ```
 
 After that, all `ai` commands handle starting and stopping services automatically.
@@ -70,7 +71,7 @@ After that, all `ai` commands handle starting and stopping services automaticall
 These flags are passed to every mode and are critical for stability on 12GB VRAM:
 
 - `-fitt 1600`: Leaves ~300MB VRAM margin for compute buffers. Prevents mid-generation CUDA crashes.
-- `-c 65536`: 65k context. 131k crashes the system due to RAM limits.
+- `-c 32768`: 32k context. 65k doesn't exceed limits but is too close for comfort on 32GB RAM.
 - `-n 16384`: Max tokens to generate per response.
 - `-fa on`: Enable flash attention.
 - `-np 1`: Number of parallel sequences.
@@ -141,4 +142,4 @@ After that, `ai chat`, `ai fast`, or `ai ui` handle starting and stopping it.
   
   Reboot to apply.
 - **CUDA crashes / OOM mid-generation:** Close all browsers before starting. VRAM is maxed at ~11.6GB. If crashes persist, increase `-fitt` in `ai.zsh` in increments of 50.
-- **Context crashes / system freeze:** Do not exceed 65k context. 131k exceeds RAM limits on 32GB.
+- **Context crashes / system freeze:** Stick to 32k. 65k doesn't exceed limits but is too close for comfort on 32GB RAM.
