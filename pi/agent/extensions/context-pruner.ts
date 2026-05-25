@@ -1,19 +1,28 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
-const MAX_READ_CHARS  = 16000;   // ~4k tokens (4 chars/token heuristic)
-const MAX_BASH_CHARS  =  8000;   // ~2k tokens
-const CTX_SIZE        = 65536;
+const MAX_READ_CHARS  = 32000;  // ~8k tokens, fits most real files comfortably
+const MAX_BASH_CHARS  = 16000;  // ~4k tokens, less likely to truncate useful output
+const CTX_SIZE        = 32768;
 const CONTEXT_WARN_PCT  = 0.70;  // warn at 70% of context window
-const CONTEXT_WARN_THRESHOLD = Math.floor(CTX_SIZE * CONTEXT_WARN_PCT); // 45875
+const CONTEXT_WARN_THRESHOLD  = Math.floor(CTX_SIZE * CONTEXT_WARN_PCT);  // 22937
+const CONTEXT_HARD_PCT        = 0.85;  // hard stop at 85% of context window
+const CONTEXT_HARD_THRESHOLD  = Math.floor(CTX_SIZE * CONTEXT_HARD_PCT);  // 27852
 
-let warnedContextThreshold = false;
+let warnedContextThreshold  = false;
+let hardThresholdTriggered  = false;
 
 export default function (pi: ExtensionAPI) {
   // Reset warning flag on new session / restart
-  pi.on("session_start", async () => { warnedContextThreshold = false; });
-  // Reset on compaction so we warn again if context grows past threshold
-  pi.on("session_compact", async () => { warnedContextThreshold = false; });
+  pi.on("session_start", async () => {
+    warnedContextThreshold = false;
+    hardThresholdTriggered = false;
+  });
+  // Reset on compaction so we can warn/abort again if context grows past threshold
+  pi.on("session_compact", async () => {
+    warnedContextThreshold = false;
+    hardThresholdTriggered = false;
+  });
 
   // ── Truncate oversized tool results ──────────────────────────────────────
   pi.on("tool_result", async (event, ctx) => {
@@ -72,6 +81,16 @@ export default function (pi: ExtensionAPI) {
         "warning",
       );
       warnedContextThreshold = true;
+    }
+
+    if (usage.tokens > CONTEXT_HARD_THRESHOLD && !hardThresholdTriggered) {
+      const pct = Math.round((usage.tokens / CTX_SIZE) * 100);
+      ctx.ui.notify(
+        `Context at ${pct}% (${usage.tokens.toLocaleString()} / ${CTX_SIZE} tokens) — hard threshold reached`,
+        "error",
+      );
+      hardThresholdTriggered = true;
+      ctx.abort();
     }
   });
 }
