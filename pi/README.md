@@ -27,9 +27,10 @@ The repo copy has sanitized API keys — add real keys locally.
 
 | Provider | Model | Notes |
 |---|---|---|
-| nvidia | minimaxai/minimax-m2.7 | Default. Requires NVIDIA API key(s). Rate-limit distributed by key-rotator. |
-| llamacpp | qwen-local (Qwen3.6-35B-A3B) | Local via `llama-server` at `127.0.0.1:8085`. 32k context. |
+| llamacpp | qwen-local (Qwen3.6-35B-A3B) | Default. Local via `llama-server` at `127.0.0.1:8085`. 32k context. |
+| nvidia | minimaxai/minimax-m2.7 | Requires NVIDIA API key(s). Rate-limit distributed by key-rotator. |
 | gemini-studio | gemma-4-31b-it | Google Generative AI API. Vision support. |
+
 
 ## Extensions
 
@@ -54,9 +55,10 @@ After editing, restart pi. Use `/keys` to check rotation status.
 
 ### context-pruner
 
-- Truncates `read` outputs beyond ~4k tokens
-- Truncates `bash` outputs beyond ~2k tokens
-- Warns once per session when context hits 70% (~45k tokens)
+- Truncates `read` outputs beyond ~8k tokens
+- Truncates `bash` outputs beyond ~4k tokens
+- Warns once per session when context hits 70% (~22.9k tokens)
+- Aborts the turn once per session when context hits 85% (~27.9k tokens)
 
 ### permission-gate
 
@@ -66,11 +68,18 @@ Prompts for confirmation before running: `rm`, `sudo`, `chmod`/`chown 777`, `tru
 
 Use `/session-name [name]` to give the current session a friendly name visible in the session picker.
 
+## Settings
+Configured in `agent/settings.json`.
+
+- **Default provider:** `llamacpp` (local Qwen3.6-35B-A3B)
+- **Compaction:** enabled — reserves 8192 tokens, keeps 16k recent tokens on compact
+- **Shell:** `/usr/bin/zsh`
+
 ## Syncing
 
 Copies `~/.pi/agent/` → `pi/agent/` (from the repo root). These are excluded automatically:
 
-- `auth.json`, `sessions/`, `git/`, `themes/`, `extensions/key-rotator/keys.json`
+- `auth.json`, `sessions/`, `git/`, `themes/`,`npm/`, `node_modules/`, and `extensions/key-rotator/keys.json`
 
 API keys in `models.json` are redacted during sync.
 

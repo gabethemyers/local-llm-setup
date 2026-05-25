@@ -9,7 +9,7 @@ Configuration, build instructions, and management scripts for running Qwen3.6-35
 - **GPU:** RTX 3060 12GB
 - **Storage:** 500GB WD NVMe (PCIe 3.0 x4)
 - **OS:** CachyOS (Linux)
-- **Critical:** Close Firefox/browsers before starting. They consume ~166MB VRAM, which pushes the 12GB limit and causes CUDA crashes.
+- **Critical:** Be aware of having Firefox/browsers open before starting. They consume VRAM, which could push the 12GB limit and causes CUDA crashes.
 
 ## Stack
 
@@ -141,5 +141,5 @@ After that, `ai chat`, `ai fast`, or `ai ui` handle starting and stopping it.
   ```
   
   Reboot to apply.
-- **CUDA crashes / OOM mid-generation:** Close all browsers before starting. VRAM is maxed at ~11.6GB. If crashes persist, increase `-fitt` in `ai.zsh` in increments of 50.
+- **CUDA crashes / OOM mid-generation:** VRAM is maxed at ~11.6GB. If crashes persist, increase `-fitt` in `ai.zsh` in increments of 50.
 - **Context crashes / system freeze:** Stick to 32k. 65k doesn't exceed limits but is too close for comfort on 32GB RAM.
