@@ -70,7 +70,7 @@ After that, all `ai` commands handle starting and stopping services automaticall
 
 These flags are passed to every mode and are critical for stability on 12GB VRAM:
 
-- `-fitt 1600`: Leaves ~300MB VRAM margin for compute buffers. Prevents mid-generation CUDA crashes.
+- `-fitt 1400`: Leaves VRAM margin for compute buffers. Prevents mid-generation CUDA crashes.
 - `-c 32768`: 32k context. 65k doesn't exceed limits but is too close for comfort on 32GB RAM.
 - `-n 16384`: Max tokens to generate per response.
 - `-fa on`: Enable flash attention.
@@ -80,7 +80,7 @@ These flags are passed to every mode and are critical for stability on 12GB VRAM
 - `--no-mmap --mlock`: Loads model fully into RAM and pins it. Prevents paging during inference. *(Requires `memlock` fix — see Troubleshooting)*
 - `--threads 6`: CPU threads for non-GPU work.
 - `--cont-batching`: Continuous batching for better throughput.
-- `--batch-size 1024 --ubatch-size 512`: Batch size limits.
+- `--batch-size 2048 --ubatch-size 1024`: Batch size limits.
 - `--spec-type draft-mtp`: Enables MTP speculative decoding (enabled in all modes).
 - `--host 0.0.0.0 --port 8085`: Exposes server for Docker container access.
 - `--timeout 300 --metrics`: 5-minute idle timeout and Prometheus metrics.
