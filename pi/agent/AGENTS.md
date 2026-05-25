@@ -63,7 +63,7 @@ The following aliases are active in this shell. Use the exact commands — do no
 
 ## Context Management
 
-- **Your context window is 65,536 tokens.** Treat this as a hard ceiling. 
+- **Your context window is 32,768 tokens.** Treat this as a hard ceiling. 
   System prompt, conversation history, and tool outputs all count toward it. 
 - **Be efficient** — don't re-read files that were already loaded unless something changed. 
 - **Reference prior knowledge from the conversation** rather than asking to re-read files.

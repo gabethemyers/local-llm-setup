@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.75.1",
+  "lastChangelogVersion": "0.75.5",
   "shellPath": "/usr/bin/zsh",
   "theme": "dark",
   "defaultProvider": "llamacpp",
@@ -15,4 +15,3 @@
     "npm:pi-handoff"
   ]
 }
-
