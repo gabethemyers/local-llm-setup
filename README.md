@@ -32,14 +32,13 @@ Binary will be at `~/llama-cpp/build/bin/llama-server`.
 
 | Model                 | Quant      | Link                                                                      | VRAM     | Context | Tok/s   | --fitt      |
 | --------------------- | ---------- | ------------------------------------------------------------------------- | -------- | ------- | ------- | ------------ |
-| Qwen3.6-35B-A3B (MTP) | UD-Q4_K_XL | [HuggingFace](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | ~11.6 GB | 32k  | ~40 t/s | 1600 |
+| Qwen3.6-35B-A3B (MTP) | UD-Q4_K_XL | [HuggingFace](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | ~11.6 GB | 32k  | ~60 t/s | 1400 |
 
 Download model:
 
 ```bash
 hf download unsloth/Qwen3.6-35B-A3B-MTP-GGUF --include "*UD-Q4_K_XL*" --local-dir ~/models/
 ```
-
 
 
 ## Management Script
@@ -56,13 +55,14 @@ After that, all `ai` commands handle starting and stopping services automaticall
 
 | Command     | Description                                                                                    |
 | ----------- | ---------------------------------------------------------------------------------------------- |
-| `ai chat`   | Chat mode — thinking enabled, general purpose (temp 1.0) + Open WebUI + Firefox                |
-| `ai code`   | Code mode — thinking enabled, precise (temp 0.6) + server only                                 |
-| `ai fast`   | Fast mode — thinking disabled, general purpose (temp 0.7, higher draft) + Open WebUI + Firefox |
-| `ai ui`     | Toggles Open WebUI container on/off                                                            |
-| `ai off`    | Stops llama-server and Open WebUI                                                              |
-| `ai status` | Shows running state of both services                                                           |
-| `ai logs`   | Tails `/tmp/llama-server.log`                                                                  |
+| `ai chat`   | Chat mode - thinking enabled, general purpose (temp 1.0) + Open WebUI + Firefox |
+| `ai code`   | Code mode - thinking enabled, precise (temp 0.6) + server only | 
+| `ai fast`   | Fast mode - thinking disabled, general purpose (temp 0.7, higher draft) + Open WebUI + Firefox |
+| `ai ui`     | Toggles Open WebUI container on/off |
+| `ai off`    | Stops llama-server and Open WebUI |
+| `ai status` | Shows running state of both services |
+| `ai logs`   | Tails `/tmp/llama-server.log` |
+|  `ai bench` | Runs the automated `llama-benchy` suite and appends timestamped results to `BENCHMARKS.md` |
 
 ## Key Configuration & Flags
 
@@ -143,3 +143,74 @@ After that, `ai chat`, `ai fast`, or `ai ui` handle starting and stopping it.
   Reboot to apply.
 - **CUDA crashes / OOM mid-generation:** VRAM is maxed at ~11.6GB. If crashes persist, increase `-fitt` in `ai.zsh` in increments of 50.
 - **Context crashes / system freeze:** Stick to 32k. 65k doesn't exceed limits but is too close for comfort on 32GB RAM.
+
+## Benchmarking
+
+I use [`llama-benchy`](https://github.com/eugr/llama-benchy) to measure prompt processing (prefill) and token generation (decoding) speeds, specifically focusing on how the system handles prefix caching at various context depths. 
+
+Ensure `uv` is installed before running these tests. 
+
+### 1. Start the Server
+Run the server in `code` mode to isolate it from Open WebUI and free up maximum VRAM:
+```bash
+ai code
+```
+
+### 2. Standard Performance & Prefix Caching Test
+
+This test measures baseline speeds and verifies that the K-V cache is being utilized correctly for follow-up prompts at depths of 2048 and 4096 tokens.
+
+```bash
+uvx llama-benchy \
+  --base-url http://localhost:8085/v1 \
+  --model Qwen3.6-35B \
+  --latency-mode generation \
+  --depth 0 2048 4096 \
+  --enable-prefix-caching
+
+```
+
+*Note: If `pp2048 @ d4096` speeds crash or show massive variance, verify that `--batch-size 2048` and `--ubatch-size 1024` are set in `ai.zsh` to prevent K-V cache synchronization bottlenecks.*
+
+### 3. Maximum VRAM Stress Test (32k Context)
+
+To verify that the system can handle the full 32,768 context limit without throwing a CUDA Out of Memory (OOM) error, run a deep context test.
+
+By setting the depth to 30,720 and the prompt size to 2,048, we hit exactly 32,768 tokens:
+
+```bash
+uvx llama-benchy \
+  --base-url http://localhost:8085/v1 \
+  --model Qwen3.6-35B \
+  --latency-mode generation \
+  --pp 2048 \
+  --depth 30720 \
+  --enable-prefix-caching
+```
+
+Monitor `ai logs` during this test. If the server crashes change the parameters in `ai.zsh`. For example, lower the `-c` or reduce `--ubatch-size` or increase `--fitt`.
+
+### 4. Exporting Results
+
+To save the benchmark results for analysis, append the `--save-result` flag. Use `--format json` along with timeseries flags for the most granular data:
+
+```bash
+uvx llama-benchy \
+  --base-url http://localhost:8085/v1 \
+  --model Qwen3.6-35B \
+  --latency-mode generation \
+  --save-result benchmark_output.json \
+  --format json \
+  --save-all-throughput-timeseries
+```
+
+### 5. Automated Benchmarking & Tracking
+
+To track performance across hardware changes, configuration tweaks, or `llama.cpp` updates, use the automated benchmark built into the management script.
+
+Run the server in code mode, then trigger the benchmark:
+
+```bash
+ai code
+ai bench
+```

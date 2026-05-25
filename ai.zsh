@@ -124,9 +124,45 @@ ai() {
             echo "Tailing llama-server logs (Ctrl+C to exit)..."
             tail -f /tmp/llama-server.log
             ;;
+        bench)
+            echo "Starting automated benchmark suite..."
+            # Use an absolute path so it always saves to the right place no matter where you run the command
+            local BENCH_FILE="$HOME/dev/local-llm-setup/BENCHMARKS.md"
+            local LLAMA_DIR="$HOME/llama-cpp"
+            
+            # Grab the current llama.cpp commit hash if the directory exists
+            local LLAMA_HASH="unknown"
+            if [ -d "$LLAMA_DIR" ]; then
+                LLAMA_HASH=$(cd "$LLAMA_DIR" && git rev-parse --short HEAD 2>/dev/null)
+            fi
 
+            # Format the markdown header (appends)
+            echo -e "\n## Benchmark Run: $(date '+%Y-%m-%d %H:%M:%S')" >> "$BENCH_FILE"
+            echo -e "**Model:** Qwen3.6-35B | **llama.cpp hash:** \`$LLAMA_HASH\`\n" >> "$BENCH_FILE"
+            
+            echo "Running standard & prefix caching test (Depths: 0, 2048, 4096)..."
+            PYTHONWARNINGS="ignore" TRANSFORMERS_VERBOSITY=error uvx llama-benchy \
+              --base-url http://localhost:8085/v1 \
+              --model Qwen3.6-35B \
+              --latency-mode generation \
+              --depth 0 2048 4096 \
+              --enable-prefix-caching | tee -a "$BENCH_FILE"
+            
+            echo -e "\n" >> "$BENCH_FILE"
+
+            echo "Running 32k context stress test..."
+            PYTHONWARNINGS="ignore" TRANSFORMERS_VERBOSITY=error uvx llama-benchy \
+              --base-url http://localhost:8085/v1 \
+              --model Qwen3.6-35B \
+              --latency-mode generation \
+              --pp 2048 \
+              --depth 30720 \
+              --enable-prefix-caching | tee -a "$BENCH_FILE"
+
+            echo "Benchmarks complete. Results appended to $BENCH_FILE"
+            ;;
         *)
-            echo "Usage: ai [chat|code|fast|ui|off|status|logs]"
+            echo "Usage: ai [chat|code|fast|ui|off|status|logs|bench]"
             ;;
     esac
 }
