@@ -14,7 +14,7 @@ ai() {
 
         nohup $SERVER_BIN \
             -m $MODEL_PATH \
-            -fitt 1600 \
+            -fitt 1400 \
             -c 32768 \
             -n 16384 \
             -fa on \
@@ -28,8 +28,8 @@ ai() {
             --mlock \
             --threads 6 \
             --cont-batching \
-            --batch-size 1024 \
-            --ubatch-size 512 \
+            --batch-size 2048 \
+            --ubatch-size 1024 \
             --spec-type draft-mtp \
             --host 0.0.0.0 --port $PORT \
             --timeout 300 --metrics \
