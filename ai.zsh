@@ -126,17 +126,16 @@ ai() {
             ;;
         bench)
             echo "Starting automated benchmark suite..."
-            # Use an absolute path so it always saves to the right place no matter where you run the command
+            # WARNING: Absolute Path
             local BENCH_FILE="$HOME/dev/local-llm-setup/BENCHMARKS.md"
             local LLAMA_DIR="$HOME/llama-cpp"
             
-            # Grab the current llama.cpp commit hash if the directory exists
+            # Get the current llama.cpp commit hash if it exists
             local LLAMA_HASH="unknown"
             if [ -d "$LLAMA_DIR" ]; then
                 LLAMA_HASH=$(cd "$LLAMA_DIR" && git rev-parse --short HEAD 2>/dev/null)
             fi
 
-            # Format the markdown header (appends)
             echo -e "\n## Benchmark Run: $(date '+%Y-%m-%d %H:%M:%S')" >> "$BENCH_FILE"
             echo -e "**Model:** Qwen3.6-35B | **llama.cpp hash:** \`$LLAMA_HASH\`\n" >> "$BENCH_FILE"
             
