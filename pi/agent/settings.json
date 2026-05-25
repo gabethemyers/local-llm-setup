@@ -4,9 +4,15 @@
   "theme": "dark",
   "defaultProvider": "llamacpp",
   "defaultModel": "qwen-local",
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 8192,
+    "keepRecentTokens": 16000
+  },
   "packages": [
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:@agnishc/edb-agent-steer",
     "npm:pi-handoff"
   ]
 }
+
